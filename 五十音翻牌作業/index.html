@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Alkatra:wght@400;700&family=Cherry+Bomb+One&family=Climate+Crisis&family=Noto+Sans+TC:wght@100;300;400&family=Tsukimi+Rounded:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            background: url(./Img/bg.jpg);
+            background-repeat: no-repeat;
+            /* overflow: hidden; */
+            margin: auto;
+        }
+
+        .title_text {
+            text-align: center;
+            width: 100%;
+            /* background: #ffa; */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        #game {
+            width: 100%;
+            height: 100vh;
+            /* background: #aaa; */
+        }
+
+        .card {
+            width: 200px;
+            height: 300px;
+            /* position: relative; */
+            float: left;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+
+            /* 設定子元素在3D空間內 */
+            transform-style: preserve-3d;
+            /* 翻開效果 */
+            transition: transform 1s;
+        }
+
+        .card:hover {
+            box-shadow: 0px 0px 20px #fff;
+        }
+
+        .cardFront {
+            width: 100%;
+            height: 100%;
+            background-image: url(./Img/第一關/A平假/1A.png);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+
+            /* 隱藏背面 */
+            backface-visibility: hidden;
+        }
+
+        .cardBack {
+            width: 100%;
+            height: 100%;
+            background-image: url(./Img/背面.png);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+        }
+
+        .card-close {
+            transform: rotateY(180deg);
+        }
+
+        #btn {
+            width: 200px;
+            height: 80px;
+            background: #d47d44;
+            border-radius: 30px;
+            color: #fff;
+            text-align: center;
+            line-height: 80px;
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-size: 40px;
+            box-shadow: 5px 5px 0 #945328;
+        }
+
+        .fraction {
+            width: 500px;
+            height: 300px;
+            /* background: #da7808; */
+            background: url(./Img/1379823709-772417430_wn.jpg)no-repeat;
+            position: absolute;
+            top: 650px;
+            right: 35px;
+            padding-top: 30px;
+            text-align: center;
+            font-family: 'Tsukimi Rounded', sans-serif;
+            color: #fff;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title_text">
+        <img class="nihongo" src="./Img/title.gif">
+    </div>
+
+    <div class="fraction">
+        <p>秒読み: <span id="text-time">0</span>秒</p>
+        <p>當前分数: <span id="text-score">0</span></p>
+        <p>最高得点: <span id="text-highscore">0</span></p>
+        <p>記録保持者: <span id="text-highscorename">沒有人</span></p>
+    </div>
+
+    <audio src=""></audio>
+    <!-- <div class="card">
+        <div class="cardFront"></div>
+        <div class="cardBack"></div>
+    </div> -->
+    <div id="game">
+        <script src="./jquery-3.6.4.min.js"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js'
+            integrity='sha512-/iBgV43zPirSC0tue+PT/1VHGs7En24twBmT+sVMgn9PTaOpKfbgIyL5YsGKlbAIxcwz9S8W/YEnYjpIYj2Axw=='
+            crossorigin='anonymous'></script>
+
+        <script>
+            // 分數
+            let score = 0
+            // 剩餘秒數
+            let countdown = 0
+            // 計時器
+            let timer = 0
+            // 最高分
+            const highscore = localStorage.zombie ?
+                JSON.parse(localStorage.zombie) : { name: '沒有人', score: 0 }
+
+            let tag = true
+
+            $('#text-highscorename').text(highscore.name)
+            $('#text-highscore').text(highscore.score)
+
+
+            // 遊戲標題點擊後淡出
+            $('body').click(function () {
+                setTimeout(function () {
+                    $('.nihongo').fadeOut(1000, function () {
+                    }).delay(5000).queue(function () {
+                        $(this).remove()
+                    })
+                }, 200)
+            })
+
+
+            // 開始遊戲
+            $('body').click(function (event) {
+                if ($(event.target).hasClass('swal2-confirm')) return
+
+                if (tag == true) {
+                    tag = false
+                    // 重設
+                    score = 0
+                    $('#text-score').text(score)
+                    countdown = 50
+                    $('#text-time').text(countdown)
+                    // 清空遊戲區域
+                    $('#game').html('');
+                    // 開始遊戲
+                    timer = setInterval(function () {
+                        // 倒數
+                        countdown--
+                        $('#text-time').text(countdown);
+
+
+                        if (countdown == 5) {
+                            $('#text-time').addClass('red');
+
+                        }
+                        // 時間到
+                        else if (countdown === 0) {
+                            clearInterval(timer)// Interval 間隔
+                            // 遊戲區域清空
+                            $('#game').html('')
+                            // 重新啟用開始按鈕
+                            // tag = true
+
+                            if (score > highscore.score) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: '時間到',
+                                    text: `最高分，你得到 ${score} 分`,
+                                    input: 'text',
+                                    inputPlaceholder: '請輸入玩家名字',
+                                    inputAttributes: {//attributes 屬性
+                                        required: true //required 必須的(必填)
+                                    },
+                                    validationMessage: '名稱必填',//validation 驗證
+                                    allowOutsideClick: false,// allow 允許
+                                    allowEscapeKey: false
+                                }).then(function (result) {// result 結果
+                                    highscore.name = result.value
+                                    highscore.score = score
+                                    $('#text-highscorename').text(highscore.name)
+                                    $('#text-highscore').text(highscore.score)
+
+                                    localStorage.zombie = JSON.stringify(highscore)
+                                }).then(() => {
+                                    tag = true
+                                })
+
+                            } else {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: '時間到',
+                                    text: `你得到 ${score} 分`
+                                }).then(() => {
+                                    tag = true
+                                })
+                            }
+                        }
+                    }, 1000)
+                    // 產生 23 張卡片
+                    // 決定每張的數字
+                    for (let i = 1; i <= 24; i++) {
+                        $('#game').append(`
+                        <div class="card card-close">
+                        <div class="cardFront"></div>
+                        <div class="cardBack"></div>
+                        </div>
+                        `)
+                    }
+
+                    // 24張
+                    let stage = 1
+                    for (let i = 0; i < 24; i++) {
+                        // 0~15 變 1~8
+                        // 打亂
+                        const num = i % 12 + 1
+                        $('l1')
+
+                        if (i <= 12) {
+                            $('.card').eq(i).find('.cardFront').css('background-image', `url(./Img/第一關/A平假/${num}A.png)`)
+                        } else if (i >= 13) {
+                            $('.card').eq(i).find('.cardFront').css('background-image', `url(./Img/第一關/B片假/${num}B.png)`)
+                        }
+                        $('.card').eq(i).attr('data-card', num)
+                        const target = Math.round(Math.random() * 45)
+                        $('.card').eq(target).insertAfter($('.card').eq(i))
+                    }
+                }
+            })
+
+            // 點擊配對
+            $('#game').on('click', '.card', function () {
+                // console.log('asss')
+                if (
+                    // 如果還沒翻開兩張
+                    $('.card:not(.card-close)').length < 2 &&
+                    // 且這張牌還沒翻開
+                    $(this).hasClass('card-close') &&
+                    // 且這張牌還沒配對
+                    !$(this).hasClass('card-ok')
+                ) {
+                    $(this).removeClass('card-close')
+                }
+
+
+                if ($('.card:not(.card-close)').length === 2) {
+                    console.log('123');
+                    //先檢查數字
+                    if (
+                        $('.card:not(.card-close)').eq(0).attr('data-card') ===
+                        $('.card:not(.card-close)').eq(1).attr('data-card')
+                    ) {
+                        $('.card:not(.card-close)').addClass('card-ok')
+                        $('.card:not(.card-close)').fadeTo(1000, 0)
+                        score++
+                        // console.log('++');
+                        // score = $('.card-ok').length / 2
+                        $('#text-score').text(score)
+                        // console.log('分數是ok長度/2');
+                    }
+                    // 不管數字是否一樣都翻過來
+                    setTimeout(function () {
+                        $('.card:not(.card-close)').addClass('card-close')
+                        if ($('.card-ok').length === $('.card').length) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '恭喜',
+                                text: "恭喜過關!"
+                            })
+                        }
+                    }, 1000)
+                }
+
+
+            })
+
+
+
+
+
+        </script>
+    </div>
+</body>
+
+</html>
